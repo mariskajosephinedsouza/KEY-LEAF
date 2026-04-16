@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KeyLeaf | Instrument Based Plant System</title>
+    <style>
+        :root {
+            --navy: #001b3a;
+            --royal-blue: #0056b3;
+            --accent-orange: #ff851b;
+            --text: #ffffff;
+            --glass: rgba(255, 255, 255, 0.1);
+        }
+
+        * {
+		box-sizing: border-box;
+		}
+		
+        body { 
+            margin: 0; 
+            font-family: 'Segoe UI', Roboto, sans-serif; 
+            background: var(--navy); 
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        /*---LOGIN---*/
+        #auth-container { 
+		display: flex;
+		justify-content: center; 
+		align-items: center; 
+		min-height: 100vh; 
+		background: #000c1a;
+		}
+		
+        .auth-card {
+            background: var(--navy);
+            padding: 40px;
+            width: 100%;
+            max-width: 450px;
+            text-align: center;
+            border: 1px solid var(--royal-blue);
+        }
+        .auth-header { 
+            background: var(--royal-blue); 
+            padding: 20px; 
+            margin: -40px -40px 30px -40px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            gap: 15px; 
+        }
+        .input-group {
+		margin-bottom: 15px; 
+		text-align: left; display: flex; 
+		align-items: center; 
+		background: rgba(255,255,255,0.1);
+		padding: 5px 15px; 
+		border-radius: 5px; 
+		}
+        .input-group label { 
+		width: 100px; 
+		font-weight: bold; 
+		font-size: 0.9rem; 
+		color: var(--accent-orange);
+		}
+		
+        .input-group input { 
+		flex: 1;
+		border: none;
+		background: transparent; 
+		padding: 10px; 
+		outline: none; 
+		color: white; 
+		}
+        .auth-btn { 
+		background: var(--accent-orange); 
+		border: none; 
+		padding: 12px; 
+		width: 60%;
+		cursor: pointer;
+		margin-top: 10px; 
+		font-weight: bold; 
+		color: white;
+		border-radius: 5px; 
+		}
+
+        /*---DASHBOARD---*/
+        #dashboard {
+		display: none;
+		}
+        nav {
+		background: rgba(0,0,0,0.3);
+		padding: 15px; 
+		display: flex; 
+		justify-content: center; 
+		gap: 20px;
+		border-bottom: 1px solid var(--royal-blue);
+		flex-wrap: wrap;
+		}
+        .nav-btn { 
+		background: none;
+		border: none; 
+		cursor: pointer;
+		font-weight: bold;
+		text-transform: uppercase;
+		color: white; 
+		font-size: 0.8rem;
+		}
+		
+        .nav-btn:hover { 
+		color: var(--accent-orange);
+		}
+
+        /* --- PAGES --- */
+        .page { 
+		padding: 40px 20px; 
+		max-width: 1000px;
+		margin: 0 auto; 
+		display: none; 
+		}
+		
+        .active { 
+		display: block;
+		}
+
+        /* --- RECTANGLE ACHIEVEMENTS --- */
+        .achievement-row {
+            background: var(--glass);
+            padding: 25px 35px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-radius: 10px;
+            border-right: 8px solid var(--accent-orange);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+		
+        .achievement-text { 
+		font-size: 1.2rem;
+		font-weight: bold;
+		}
+		
+        .achievement-img {
+		font-size: 3rem;
+		}
+
+        /* --- HABIT & GARDEN --- */
+        .timer-display { 
+		font-size: 6rem;
+		font-weight: bold;
+		text-align: center; 
+		color: var(--accent-orange);
+		margin: 30px 0; 
+		}
+		
+        .garden-grid { 
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)); 
+		gap: 15px;
+		margin-top: 30px; 
+		}
+		
+        .plant-slot { 
+		font-size: 2.5rem; 
+		text-align: center;
+		background: rgba(255,255,255,0.05);
+		padding: 10px;
+		border-radius: 10px;
+		}
+
+        /* --- SONG LIBRARY --- */
+        .song-card {
+            background: var(--glass);
+            padding: 20px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+        }
+        .song-card:hover { 
+		background: var(--royal-blue); 
+		}
+
+        /* --- ALERTS --- */
+        .overlay { 
+		position: fixed;
+		top: 0;
+		left: 0; 
+		width: 100%; 
+		height: 100%;
+		background: rgba(0,0,0,0.8);
+		display: none; 
+		justify-content: center; 
+		align-items: center;
+		z-index: 10000;
+		}
+		
+        .alert-modal { 
+		background: var(--navy);
+		padding: 40px; 
+		border: 3px solid var(--accent-orange);
+		text-align: center; 
+		width: 90%;
+		max-width: 450px;
+		border-radius: 20px;
+		}
+		
+    </style>
+</head>
+<body>
+
+<div id="auth-container">
+    <div id="login-screen" class="auth-card">
+        <div class="auth-header"><strong>KeyLeaf | Login</strong></div>
+        <h2 style="color: var(--accent-orange);">Sign In</h2>
+        <div class="input-group"><label>User ID:</label><input type="text" id="login-user" placeholder="Name or 'teacher'"></div>
+        <div class="input-group"><label>Password:</label><input type="password" id="login-pass" placeholder="••••••"></div>
+        <button class="auth-btn" onclick="handleAuth()">LOGIN</button>
+    </div>
+</div>
+
+<div id="dashboard">
+    <nav id="main-nav"></nav>
+
+    <div id="page-home" class="page active">
+        <h2>Welcome, <span id="display-name" style="color: var(--accent-orange);"></span></h2>
+        <div style="background: var(--glass); padding: 20px; border-radius: 10px;">
+            <h3>Your Daily Goal</h3>
+            <p>KeyLeaf helps users to learn play the piano along with a rewarding system. REWARDS? YES! For every time the User
+			learns to play the piano they get a plant planted in their virtual garden. Every time a song has been approved,
+			A real plant has been planted for you. So, WHAT ARE YOU WAITING FOR? Get Started on your musical journey with KeyLeaf. GOOD LUCK.</p>
+        </div>
+    </div>
+
+    <div id="page-library" class="page">
+        <h2>Song Library</h2>
+        <div class="song-card"><span>O Holy Night</span> <span>🎧</span></div>
+        <div class="song-card"><span>Every Breathe You Take</span> <span>🎧</span></div>
+        <div class="song-card"><span>Faded</span> <span>🎧</span></div>
+    </div>
+
+    <div id="page-upload" class="page">
+        <h2>Upload Performance</h2>
+        <div id="mic-trigger" style="background: var(--glass); padding: 60px; text-align:center; cursor:pointer; font-size: 4rem; border-radius: 15px; border: 2px dashed var(--royal-blue);">🎙️</div>
+        <p id="mic-status" style="text-align:center; margin-top: 15px;">Tap microphone to record</p>
+        <button class="auth-btn" id="submit-rec" style="display:none; width:100%;" onclick="submitRecording()">Submit for Approval</button>
+    </div>
+
+    <div id="page-habit" class="page">
+        <h2>Practice Session</h2>
+        <div class="timer-display" id="timer-val">00:00</div>
+        <button class="auth-btn" id="timer-toggle" onclick="toggleHabitTimer()" style="width:100%;">Start Recording Practice</button>
+    </div>
+
+    <div id="page-garden" class="page">
+        <h2>My Virtual Garden</h2>
+        <p>Total Practice: <span id="stat-time" style="color: var(--accent-orange); font-weight: bold;">0</span> minutes</p>
+        <div class="garden-grid" id="garden-view"></div>
+    </div>
+
+    <div id="page-stars" class="page">
+        <h2>Star Collection</h2>
+        <div id="star-list"></div>
+    </div>
+
+    <div id="page-forest" class="page">
+        <h2>Forest Impact</h2>
+        <div id="forest-list"></div>
+    </div>
+
+    <div id="page-teacher" class="page">
+        <h2>Teacher Review Panel</h2>
+        <div id="teacher-queue"></div>
+    </div>
+</div>
+
+<div class="overlay" id="alert-overlay">
+    <div class="alert-modal">
+        <h2 id="alert-title">Notification</h2>
+        <p id="alert-msg"></p>
+        <button class="auth-btn" onclick="closeAlert()">CONTINUE</button>
+    </div>
+</div>
+
+<script>
+    let userData = JSON.parse(localStorage.getItem('keyleaf_db')) || {
+        username: "",
+        role: "student",
+        starsCount: 0,
+        forestCount: 0,
+        totalMins: 0,
+        garden: [],
+        hasPending: false,
+        notificationType: null 
+    };
+
+    let timerRunning = false;
+    let seconds = 0;
+    let timerRef;
+
+    function handleAuth() {
+        const user = document.getElementById('login-user').value;
+        if(!user) return alert("Enter User ID");
+        userData.username = user;
+        userData.role = (user.toLowerCase() === 'teacher') ? 'teacher' : 'student';
+        save();
+        document.getElementById('auth-container').style.display = 'none';
+        document.getElementById('dashboard').style.display = 'block';
+        document.getElementById('display-name').innerText = user;
+        setupNav();
+        checkNotifications();
+        showPage('home');
+    }
+
+    function setupNav() {
+        const nav = document.getElementById('main-nav');
+        if (userData.role === 'teacher') {
+            nav.innerHTML = `<button class="nav-btn" onclick="showPage('teacher')">Submissions</button>
+                             <button class="nav-btn" style="color:red" onclick="location.reload()">Logout</button>`;
+        } else {
+            nav.innerHTML = `
+                <button class="nav-btn" onclick="showPage('home')">Home</button>
+                <button class="nav-btn" onclick="showPage('library')">Library</button>
+                <button class="nav-btn" onclick="showPage('upload')">Upload</button>
+                <button class="nav-btn" onclick="showPage('habit')">Habit</button>
+                <button class="nav-btn" onclick="showPage('garden')">Garden</button>
+                <button class="nav-btn" onclick="showPage('stars')">Stars</button>
+                <button class="nav-btn" onclick="showPage('forest')">Forest</button>
+                <button class="nav-btn" style="color:red" onclick="location.reload()">Logout</button>`;
+        }
+    }
+
+    function showPage(id) {
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.getElementById('page-' + id).classList.add('active');
+        if(id === 'garden') renderGarden();
+        if(id === 'stars') renderStars();
+        if(id === 'forest') renderForest();
+        if(id === 'teacher') renderTeacherQueue();
+    }
+
+    // --- TIMER / HABITS ---
+        function toggleHabitTimer() {
+            const btn = document.getElementById('timer-toggle');
+            if(!timerRunning) {
+                timerRunning = true;
+                btn.innerText = "Stop & Save Session";
+                timerRef = setInterval(() => {
+                    seconds++;
+                    let m = Math.floor(seconds/60).toString().padStart(2,'0');
+                    let s = (seconds%60).toString().padStart(2,'0');
+                    document.getElementById('timer-val').innerText = `${m}:${s}`;
+                }, 1000);
+            } else {
+                clearInterval(timerRef);
+                timerRunning = false;
+                btn.innerText = "Start Practice Session";
+                
+                let sessionMins = Math.floor(seconds/60);
+                userData.totalMins += sessionMins;
+                
+                // Logic: <10 mins = dead plant, >=10 mins = healthy plant
+                userData.garden.push(sessionMins >= 10 ? '🪴' : '🥀');
+                
+                seconds = 0;
+                document.getElementById('timer-val').innerText = "00:00";
+                save();
+                renderGarden();
+                alert("Session Saved!");
+            }
+        }
+
+        function renderGarden() {
+            document.getElementById('stat-time').innerText = userData.totalMins;
+            const view = document.getElementById('garden-view');
+            view.innerHTML = userData.garden.map(p => `<div class="plant-slot">${p}</div>`).join('');
+        }
+    // --- TEACHER REVIEW ---
+    function renderTeacherQueue() {
+        const queue = document.getElementById('teacher-queue');
+        if(userData.hasPending) {
+            queue.innerHTML = `
+                <div class="achievement-row">
+                    <div class="achievement-text">New Recording: <strong>Performance #1</strong></div>
+                    <div>
+                        <button onclick="approveAction()" style="background:#2ecc71; color:white; border:none; padding:10px; cursor:pointer; font-weight:bold; margin-right:5px; border-radius:5px;">APPROVE</button>
+                        <button onclick="declineAction()" style="background:#e74c3c; color:white; border:none; padding:10px; cursor:pointer; font-weight:bold; border-radius:5px;">DECLINE</button>
+                    </div>
+                </div>`;
+        } else {
+            queue.innerHTML = "<p>No recordings to review.</p>";
+        }
+    }
+
+    function approveAction() {
+        userData.hasPending = false;
+        userData.notificationType = 'approved'; 
+        userData.starsCount += 1;     
+        userData.forestCount += 1;    
+        save();
+        renderTeacherQueue();
+        alert("Approved!");
+    }
+
+    function declineAction() {
+        userData.hasPending = false;
+        userData.notificationType = 'declined'; 
+        save();
+        renderTeacherQueue();
+        alert("Declined!");
+    }
+
+    // --- NOTIFICATIONS ---
+    function checkNotifications() {
+        if(userData.role === 'student' && userData.notificationType) {
+            const title = document.getElementById('alert-title');
+            const msg = document.getElementById('alert-msg');
+            if(userData.notificationType === 'approved') {
+                title.innerText = "Song Approved! 🌟";
+                msg.innerText = "You earned a star and a tree has been added to your forest!";
+            } else {
+                title.innerText = "Submission Declined ❌";
+                msg.innerText = "Your teacher has declined your recording. Keep practicing!";
+            }
+            document.getElementById('alert-overlay').style.display = 'flex';
+            userData.notificationType = null; 
+            save();
+        }
+    }
+
+	// STARS
+    function renderStars() {
+        const list = document.getElementById('star-list');
+        list.innerHTML = "";
+        for(let i=1; i<=userData.starsCount; i++) {
+            list.innerHTML += `<div class="achievement-row"><div class="achievement-text">Star #${i} earned!</div><div class="achievement-img">⭐</div></div>`;
+        }
+    }
+
+	// FOREST
+    function renderForest() {
+        const list = document.getElementById('forest-list');
+        list.innerHTML = "";
+        for(let i=1; i<=userData.forestCount; i++) {
+            list.innerHTML += `<div class="achievement-row"><div class="achievement-text">Tree #${i} planted!</div><div class="achievement-img">🌳</div></div>`;
+        }
+    }
+
+	// SUBMIT THE RECORDING
+    function submitRecording() {
+        userData.hasPending = true;
+        save();
+        alert("Sent to teacher!");
+        showPage('home');
+    }
+
+	// MIC
+    const mic = document.getElementById('mic-trigger');
+    mic.onclick = () => {
+        mic.style.color = "var(--accent-orange)";
+        document.getElementById('mic-status').innerText = "Recording...";
+        setTimeout(() => {
+            document.getElementById('mic-status').innerText = "Recording Ready!";
+            document.getElementById('submit-rec').style.display = 'block';
+        }, 1000);
+    };
+
+    function save() { 
+	localStorage.setItem('keyleaf_db', JSON.stringify(userData));
+	}
+	
+    function closeAlert() { 
+	document.getElementById('alert-overlay').style.display = 'none'; 
+	}
+</script>
+
+</body>
+</html>
